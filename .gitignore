@@ -1,0 +1,107 @@
+# Gradle files
+.gradle/
+build/
+**/build/
+*/build/
+
+# Local configs
+local.properties
+*.local
+*.keystore
+*.jks
+
+# IntelliJ / Android Studio
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Log files
+*.log
+
+# Android specific
+captures/
+outputs/
+release/
+debug/
+generated/
+navigation.json
+
+# APK / AAB / Dex / Class files
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+*.aar
+*.jar
+*.war
+
+# NDK
+obj/
+.externalNativeBuild/
+
+# MacOS junk
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows junk
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Kotlin build cache
+.kotlinc/
+.kotlin/
+
+# Gradle cache
+.gradle/
+!gradle-wrapper.jar
+gradle-app.setting
+
+# Local test data
+/test-output/
+*/test-output/
+
+# Flutter sub-module (if using)
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub/
+dart_tool/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# VS Code
+.vscode/
+
+# Signing files
+signing.properties
+
+# Misc
+*.tmp
+*.temp
+*.orig
+*.swp
+*.swo
+*.bak
+
+# Jetpack Compose previews
+**/build/intermediates/compose-*
+
+# Lint
+lint/intermediates/
+lint/generated/
+
+# Firebase / Google configs (if private)
+google-services.json
+GoogleService-Info.plist
+
+# AGP 8+
+buildSrc/.gradle/
