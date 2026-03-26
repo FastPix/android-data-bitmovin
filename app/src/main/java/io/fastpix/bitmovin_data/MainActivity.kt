@@ -95,8 +95,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setUpFastPix() {
         val customerData = CustomerData(
-            workspaceId = "1129455265676623875",
-            beaconUrl = "metrix.ninja",
+            workspaceId = "workspace-key",
             videoDetails = VideoDataDetails(
                 UUID.randomUUID().toString(),
                 videoModel?.id,
@@ -122,7 +121,6 @@ class MainActivity : AppCompatActivity() {
                 analyticsConfig = AnalyticsPlayerConfig.Enabled(analyticsConfig),
             )
             binding.bitmovinPlayerView.player = player
-            // Hide the default Bitmovin UI controls
             binding.bitmovinPlayerView.setUiVisible(false)
             val streamTitle = "Sintel"
             val source = Source(

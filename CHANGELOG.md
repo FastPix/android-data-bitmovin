@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1]
+### Changed
+- Bumped SDK version to `1.0.1` in `README.md`, `BitMovinLibraryInfo.kt`, and `build.gradle.kts`.
+- Refactored `FastPixBitMovinPlayer` to use `FastPixAnalytics` for SDK initialization and management.
+- Implemented periodic `pulse` event logic using Coroutines to track active playback.
+- Added event lifecycle management to schedule or cancel pulse events based on player state (e.g., playing, buffering, seeking).
+- Updated internal `PlayerListener` method signatures for `sourceFps` and `sourceAdvertiseFrameRate` to return `Int?`.
+- Upgraded project dependencies including Kotlin to `2.1.0` and FastPix Core to `1.2.7`.
+
 ## [1.0.0] - Initial Release
 
 ### Added

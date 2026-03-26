@@ -11,12 +11,22 @@ import com.bitmovin.player.api.event.SourceEvent
 import io.fastpix.bitmovin_player_data.src.info.BitMovinLibraryInfo
 import io.fastpix.bitmovin_player_data.src.utils.PlayerEvents
 import io.fastpix.bitmovin_player_data.src.utils.Utils
+import io.fastpix.data.FastPixAnalytics
 import io.fastpix.data.FastPixDataSDK
 import io.fastpix.data.domain.SDKConfiguration
 import io.fastpix.data.domain.enums.PlayerEventType
 import io.fastpix.data.domain.listeners.PlayerListener
 import io.fastpix.data.domain.model.BandwidthModel
 import io.fastpix.data.domain.model.ErrorModel
+import io.fastpix.data.utils.Logger
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.ceil
 
 class FastPixBitMovinPlayer(
@@ -27,7 +37,7 @@ class FastPixBitMovinPlayer(
     private val customerData: CustomerData
 ) : PlayerListener {
     private val TAG = "FastPixBitMovinPlayer"
-    private lateinit var fastPixDataSDK: FastPixDataSDK
+    private var fastPixDataSDK: FastPixDataSDK? = null
     private var videoSourceHeight: Int = 0
     private var videoSourceWidth: Int = 0
     private var currentEventState: PlayerEvents? = null
@@ -38,12 +48,41 @@ class FastPixBitMovinPlayer(
     private var currentPosition: Double = 0.0
     private var bandwidthModel: BandwidthModel? = null
 
+    private val PULSE_INTERVAL = 10_000L // 1 second
+    private val isPulseScheduled = AtomicBoolean(false)
+    private val dispatcherScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private var pulseJob: Job? = null
+
     init {
         initializeFastPixDataSdk()
         setUpPlayerObservers()
         dispatchViewBegin()
         dispatchPlayerReady()
         dispatchPlay()
+    }
+
+    private fun cancelPulseEvent() {
+        if (isPulseScheduled.get()) {
+            Logger.log("EventDispatcher", "Cancelling pulse events")
+            isPulseScheduled.set(false)
+            pulseJob?.cancel()
+        }
+    }
+
+    private fun schedulePulseEvents() {
+        if (isPulseScheduled.get()) return
+
+        isPulseScheduled.set(true)
+        pulseJob = dispatcherScope.launch {
+            while (isPulseScheduled.get()) {
+                delay(PULSE_INTERVAL)
+                if (isPulseScheduled.get()) {
+                    withContext(Dispatchers.Main) {
+                        fastPixDataSDK?.dispatchEvent(PlayerEventType.pulse)
+                    }
+                }
+            }
+        }
     }
 
     private fun setUpPlayerObservers() {
@@ -134,15 +173,14 @@ class FastPixBitMovinPlayer(
     }
 
     private fun dispatchRequestCompleted() {
-        if (isReleased || !::fastPixDataSDK.isInitialized) return
+        if (isReleased || fastPixDataSDK == null) return
         if (enableLogging) {
             Log.d(TAG, "Dispatching Request Completed event")
         }
-        fastPixDataSDK.dispatchEvent(PlayerEventType.requestCompleted)
+        fastPixDataSDK?.dispatchEvent(PlayerEventType.requestCompleted)
     }
 
     private fun initializeFastPixDataSdk() {
-        fastPixDataSDK = FastPixDataSDK()
         val sdkConfiguration = SDKConfiguration(
             workspaceId = customerData.workspaceId,
             beaconUrl = customerData.beaconUrl,
@@ -152,87 +190,98 @@ class FastPixBitMovinPlayer(
             enableLogging = enableLogging,
             customData = customerData.customDataDetails
         )
-        fastPixDataSDK.initialize(sdkConfiguration, context)
+        FastPixAnalytics.initialize(sdkConfiguration, context)
+        fastPixDataSDK = FastPixAnalytics.getSDK()
     }
 
     private fun dispatchBufferedEvent() {
-        if (isReleased || !::fastPixDataSDK.isInitialized) return
+        if (isReleased || fastPixDataSDK == null) return
         if (transitionToEvent(PlayerEvents.BUFFERED)) {
             if (enableLogging) {
                 Log.d(TAG, "Dispatching Buffered event")
             }
-            fastPixDataSDK.dispatchEvent(PlayerEventType.buffered)
+            cancelPulseEvent()
+            fastPixDataSDK?.dispatchEvent(PlayerEventType.buffered)
         }
     }
 
     private fun dispatchBuffering() {
-        if (isReleased || !::fastPixDataSDK.isInitialized) return
+        if (isReleased || fastPixDataSDK == null) return
         if (transitionToEvent(PlayerEvents.BUFFERING)) {
             if (enableLogging) {
                 Log.d(TAG, "Dispatching Buffering event")
             }
-            fastPixDataSDK.dispatchEvent(PlayerEventType.buffering)
+            cancelPulseEvent()
+            fastPixDataSDK?.dispatchEvent(PlayerEventType.buffering)
         }
     }
 
     private fun dispatchError() {
-        if (isReleased || !::fastPixDataSDK.isInitialized) return
+        if (isReleased || fastPixDataSDK == null) return
         if (transitionToEvent(PlayerEvents.ERROR)) {
             if (enableLogging) {
                 Log.d(TAG, "Dispatching Error event:")
             }
-            fastPixDataSDK.dispatchEvent(PlayerEventType.error)
+            cancelPulseEvent()
+            fastPixDataSDK?.dispatchEvent(PlayerEventType.error)
         }
     }
 
     private fun dispatchEnded() {
-        if (isReleased || !::fastPixDataSDK.isInitialized) return
+        if (isReleased || fastPixDataSDK == null) return
         if (transitionToEvent(PlayerEvents.ENDED)) {
             if (enableLogging) {
                 Log.d(TAG, "Dispatching Ended event")
             }
-            fastPixDataSDK.dispatchEvent(PlayerEventType.ended)
+            cancelPulseEvent()
+            fastPixDataSDK?.dispatchEvent(PlayerEventType.ended)
         }
     }
 
     private fun dispatchSeeked() {
-        if (isReleased || !::fastPixDataSDK.isInitialized) return
+        if (isReleased || fastPixDataSDK == null) return
         if (transitionToEvent(PlayerEvents.SEEKED)) {
             if (enableLogging) {
                 Log.d(TAG, "Dispatching Seeked event ${Utils.secondToMs(lastSeekPosition)}")
             }
-            fastPixDataSDK.dispatchEvent(PlayerEventType.seeked, Utils.secondToMs(lastSeekPosition))
+            cancelPulseEvent()
+            fastPixDataSDK?.dispatchEvent(
+                PlayerEventType.seeked,
+                Utils.secondToMs(lastSeekPosition)
+            )
         }
     }
 
     private fun dispatchSeeking() {
-        if (isReleased || !::fastPixDataSDK.isInitialized) return
+        if (isReleased || fastPixDataSDK == null) return
         if (transitionToEvent(PlayerEvents.SEEKING)) {
             if (enableLogging) {
                 Log.d(TAG, "Dispatching Seeking event")
             }
-            // Temporarily set currentPosition to seeking start position for the seeking event
-            fastPixDataSDK.dispatchEvent(PlayerEventType.seeking)
+            cancelPulseEvent()
+            fastPixDataSDK?.dispatchEvent(PlayerEventType.seeking)
         }
     }
 
     private fun dispatchPause() {
-        if (isReleased || !::fastPixDataSDK.isInitialized) return
+        if (isReleased || fastPixDataSDK == null) return
         if (transitionToEvent(PlayerEvents.PAUSE)) {
             if (enableLogging) {
                 Log.d(TAG, "Dispatching Pause event")
             }
-            fastPixDataSDK.dispatchEvent(PlayerEventType.pause)
+            cancelPulseEvent()
+            fastPixDataSDK?.dispatchEvent(PlayerEventType.pause)
         }
     }
 
     private fun dispatchVariantChange() {
-        if (isReleased || !::fastPixDataSDK.isInitialized) return
+        if (isReleased || fastPixDataSDK == null) return
         if (transitionToEvent(PlayerEvents.VARIANT_CHANGED)) {
             if (enableLogging) {
                 Log.d(TAG, "Dispatching VariantChange event")
             }
-            fastPixDataSDK.dispatchEvent(PlayerEventType.variantChanged)
+            schedulePulseEvents()
+            fastPixDataSDK?.dispatchEvent(PlayerEventType.variantChanged)
         }
     }
 
@@ -259,38 +308,42 @@ class FastPixBitMovinPlayer(
     }
 
     private fun dispatchPlaying() {
-        if (isReleased || !::fastPixDataSDK.isInitialized) return
+        if (isReleased || fastPixDataSDK == null) return
         if (transitionToEvent(PlayerEvents.PLAYING)) {
             if (enableLogging) {
                 Log.d(TAG, "Dispatching Playing event")
             }
-            fastPixDataSDK.dispatchEvent(PlayerEventType.playing)
+            schedulePulseEvents()
+            fastPixDataSDK?.dispatchEvent(PlayerEventType.playing)
         }
     }
 
     private fun dispatchPlayerReady() {
-        if (isReleased || !::fastPixDataSDK.isInitialized) return
+        if (isReleased || fastPixDataSDK == null) return
         if (enableLogging) {
             Log.d(TAG, "Dispatching Play Ready event")
         }
-        fastPixDataSDK.dispatchEvent(PlayerEventType.playerReady)
+        cancelPulseEvent()
+        fastPixDataSDK?.dispatchEvent(PlayerEventType.playerReady)
     }
 
     private fun dispatchViewBegin() {
-        if (isReleased || !::fastPixDataSDK.isInitialized) return
+        if (isReleased || fastPixDataSDK == null) return
         if (enableLogging) {
             Log.d(TAG, "Dispatching ViewBegin event")
         }
-        fastPixDataSDK.dispatchEvent(PlayerEventType.viewBegin)
+        cancelPulseEvent()
+        fastPixDataSDK?.dispatchEvent(PlayerEventType.viewBegin)
     }
 
     private fun dispatchPlay() {
-        if (isReleased || !::fastPixDataSDK.isInitialized) return
+        if (isReleased || fastPixDataSDK == null) return
         if (transitionToEvent(PlayerEvents.PLAY)) {
             if (enableLogging) {
                 Log.d(TAG, "Dispatching Play event")
             }
-            fastPixDataSDK.dispatchEvent(PlayerEventType.play)
+            cancelPulseEvent()
+            fastPixDataSDK?.dispatchEvent(PlayerEventType.play)
         }
     }
 
@@ -325,7 +378,7 @@ class FastPixBitMovinPlayer(
         return Utils.getMimeTypeFromUrl(player.source?.config?.url)
     }
 
-    override fun sourceFps(): String? {
+    override fun sourceFps(): Int? {
         return null
     }
 
@@ -333,7 +386,7 @@ class FastPixBitMovinPlayer(
         return null
     }
 
-    override fun sourceAdvertiseFrameRate(): String? {
+    override fun sourceAdvertiseFrameRate(): Int? {
         return null
     }
 
@@ -400,8 +453,9 @@ class FastPixBitMovinPlayer(
 
     fun release() {
         isReleased = true
-        if (::fastPixDataSDK.isInitialized) {
-            fastPixDataSDK.release()
+        cancelPulseEvent()
+        if (fastPixDataSDK != null) {
+            fastPixDataSDK?.release()
         }
         currentPosition = 0.0
         currentEventState = null
