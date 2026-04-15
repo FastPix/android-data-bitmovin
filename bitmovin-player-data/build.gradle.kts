@@ -65,7 +65,7 @@ publishing {
         create<MavenPublication>("bar") {
             groupId = "io.fastpix.data"
             artifactId = "bitmovin"
-            version = "1.0.1"
+            version = "1.0.2"
             artifact("${buildDir}/outputs/aar/bitmovin-player-data-release.aar")
 
             pom.withXml {

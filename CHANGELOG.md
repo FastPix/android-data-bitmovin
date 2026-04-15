@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.2]
+### Changed
+- Upgraded FastPix Core dependency to `1.2.9` in `gradle/libs.versions.toml`.
+- Updated `FastPixBitMovinPlayer` pulse lifecycle handling to schedule pulse events during active playback states (`viewBegin`, `play`, `buffering`) instead of cancelling them.
+- Updated seek completion behavior to keep pulse events active when playback resumes after seek, and cancel only when the player remains paused.
+- Removed redundant pulse start/stop calls for `variantChanged`, `seeking`, `playerReady`, and `buffered` event dispatch paths.
+
 ## [1.0.1]
 ### Changed
 - Bumped SDK version to `1.0.1` in `README.md`, `BitMovinLibraryInfo.kt`, and `build.gradle.kts`.

@@ -200,7 +200,6 @@ class FastPixBitMovinPlayer(
             if (enableLogging) {
                 Log.d(TAG, "Dispatching Buffered event")
             }
-            cancelPulseEvent()
             fastPixDataSDK?.dispatchEvent(PlayerEventType.buffered)
         }
     }
@@ -211,7 +210,7 @@ class FastPixBitMovinPlayer(
             if (enableLogging) {
                 Log.d(TAG, "Dispatching Buffering event")
             }
-            cancelPulseEvent()
+            schedulePulseEvents()
             fastPixDataSDK?.dispatchEvent(PlayerEventType.buffering)
         }
     }
@@ -244,7 +243,11 @@ class FastPixBitMovinPlayer(
             if (enableLogging) {
                 Log.d(TAG, "Dispatching Seeked event ${Utils.secondToMs(lastSeekPosition)}")
             }
-            cancelPulseEvent()
+            if(player.isPaused){
+                cancelPulseEvent()
+            } else {
+                schedulePulseEvents()
+            }
             fastPixDataSDK?.dispatchEvent(
                 PlayerEventType.seeked,
                 Utils.secondToMs(lastSeekPosition)
@@ -258,7 +261,6 @@ class FastPixBitMovinPlayer(
             if (enableLogging) {
                 Log.d(TAG, "Dispatching Seeking event")
             }
-            cancelPulseEvent()
             fastPixDataSDK?.dispatchEvent(PlayerEventType.seeking)
         }
     }
@@ -280,7 +282,6 @@ class FastPixBitMovinPlayer(
             if (enableLogging) {
                 Log.d(TAG, "Dispatching VariantChange event")
             }
-            schedulePulseEvents()
             fastPixDataSDK?.dispatchEvent(PlayerEventType.variantChanged)
         }
     }
@@ -323,7 +324,6 @@ class FastPixBitMovinPlayer(
         if (enableLogging) {
             Log.d(TAG, "Dispatching Play Ready event")
         }
-        cancelPulseEvent()
         fastPixDataSDK?.dispatchEvent(PlayerEventType.playerReady)
     }
 
@@ -332,7 +332,7 @@ class FastPixBitMovinPlayer(
         if (enableLogging) {
             Log.d(TAG, "Dispatching ViewBegin event")
         }
-        cancelPulseEvent()
+        schedulePulseEvents()
         fastPixDataSDK?.dispatchEvent(PlayerEventType.viewBegin)
     }
 
@@ -342,7 +342,7 @@ class FastPixBitMovinPlayer(
             if (enableLogging) {
                 Log.d(TAG, "Dispatching Play event")
             }
-            cancelPulseEvent()
+            schedulePulseEvents()
             fastPixDataSDK?.dispatchEvent(PlayerEventType.play)
         }
     }
