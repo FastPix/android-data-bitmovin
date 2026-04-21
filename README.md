@@ -1,7 +1,7 @@
 # FastPix Bitmovin Player SDK
 
 [![License](https://img.shields.io/badge/License-Proprietary-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.0.2-green.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.0.3-green.svg)](CHANGELOG.md)
 [![Min SDK](https://img.shields.io/badge/minSdk-24-orange.svg)](bitmovin-player-data/build.gradle.kts)
 
 The FastPix Bitmovin Player SDK provides seamless integration between Bitmovin Player and the FastPix
@@ -57,7 +57,7 @@ Add the FastPix Bitmovin Player SDK and Bitmovin Player dependencies to your app
 ```kotlin
 dependencies {
     // FastPix Bitmovin Player SDK
-    implementation("io.fastpix.data:bitmovin:1.0.2")
+    implementation("io.fastpix.data:bitmovin:1.0.3")
 }
 ```
 

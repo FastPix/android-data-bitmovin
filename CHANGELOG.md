@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.3]
+- Upgrades Core SDK to 1.3.0
+
 ## [1.0.2]
 ### Changed
 - Upgraded FastPix Core dependency to `1.2.9` in `gradle/libs.versions.toml`.
