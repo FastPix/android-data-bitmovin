@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.4]
+- Updated SDK version to `1.0.4` in `BitMovinLibraryInfo.kt`, `README.md`, and `build.gradle.kts`.
+- Upgraded FastPix Core dependency to `1.3.1` in `gradle/libs.versions.toml`.
+
 ## [1.0.3]
 - Upgrades Core SDK to 1.3.0
 
