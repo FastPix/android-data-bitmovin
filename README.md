@@ -1,34 +1,74 @@
-# FastPix Bitmovin Player SDK
+# FastPix Video Data SDK for Bitmovin Player - monitor playback performance and QoE on Android
 
 [![License](https://img.shields.io/badge/License-Proprietary-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-1.0.4-green.svg)](CHANGELOG.md)
 [![Min SDK](https://img.shields.io/badge/minSdk-24-orange.svg)](bitmovin-player-data/build.gradle.kts)
 
-The FastPix Bitmovin Player SDK provides seamless integration between Bitmovin Player and the FastPix
-analytics platform. This SDK automatically tracks video playback events, metrics, and analytics data
-from your Bitmovin Player instances, enabling real-time monitoring and insights on the FastPix dashboard.
+The **FastPix Video Data SDK for Bitmovin Player** is a third-party analytics SDK that monitors video playback performance, quality of service (QoS), quality of experience (QoE), and user interactions in **Bitmovin Player on Android**. It attaches to your Bitmovin `PlayerView`, automatically tracks playback events, and reports real-time metrics - startup time, rebuffering, bitrate, and errors - to the [FastPix dashboard](https://dashboard.fastpix.com).
 
-## Key Features
+It is **not a video player** and does not replace Bitmovin Player. It is a third-party data platform you add alongside the Bitmovin Player you already ship - the same role Mux Data plays - so you can monitor playback quality and viewer engagement without building an analytics pipeline.
 
-- **Automatic Event Tracking** – Automatically captures all playback events (play, pause, seek,
-  buffering, etc.)
-- **Bitmovin Player Integration** – Built specifically for Bitmovin Player Android SDK
-- **Real-time Analytics** – Provides instant access to video performance metrics on the FastPix
-  dashboard
-- **Minimal Setup** – Easy integration with just a few lines of code
-- **Custom Metadata** – Support for custom video and player metadata
+**Works with:** Bitmovin Player Android SDK 5.0+ · Android 7.0+ (API 24) · Kotlin and Java · `io.fastpix.data:bitmovin`
+
+[Monitor Bitmovin Player docs](https://fastpix.com/docs/video-data/monitors/bitmovin-player) · [Create a free account](https://dashboard.fastpix.com/signup?utm_source=github&utm_medium=referral&utm_campaign=github_signup)
+
+## Jump to
+
+Skip straight to a section without scrolling:
+
+| Get started | Understand | Reference |
+|---|---|---|
+| [Requirements](#requirements) | [Why FastPix](#why-fastpix) | [Detailed configuration](#detailed-configuration) |
+| [Install the SDK](#installation) | [Built-in analytics vs FastPix](#built-in-bitmovin-analytics-vs-fastpix) | [Which FastPix SDK?](#which-fastpix-sdk-for-which-android-player) |
+| [Quick start](#quick-start) | [What you can track](#what-you-can-track) | [FAQ](#faq) |
+| [Complete sample](#complete-sample-player-implementation) | [Who it's for](#who-its-for) | [Troubleshooting](#troubleshooting) |
+
+## Why FastPix
+
+Bitmovin Player fires playback events, but turning them into viewer-facing quality metrics, storing them, and watching them across devices and app versions is work you would otherwise build yourself. FastPix does it for you:
+
+- **Real-time QoE monitoring.** Startup time, rebuffering, bitrate and resolution changes, and errors as they happen on real devices, in one dashboard.
+- **Automatic event tracking.** The SDK listens to Bitmovin Player's native events, so you keep full control of playback and add monitoring with a few lines.
+- **One data model across platforms.** The same FastPix Video Data metrics are reported from web, iOS, Android, and other player integrations, so you compare experiences like for like.
+- **Your metadata, your dashboard.** Tag views with video, player, and up to ten custom fields and analyze them in the FastPix dashboard.
+
+## Built-in Bitmovin analytics vs FastPix
+
+Bitmovin ships its own analytics and observability suite that tracks QoS/QoE, startup time, and buffering across its players. FastPix is a **third-party data platform** you run alongside the Bitmovin Player when you want:
+
+- Bitmovin playback data unified with your other FastPix-monitored players (web, iOS, ExoPlayer, Media3, THEOplayer, and more).
+- Custom dimensions and your own metadata on every view.
+- One dashboard, API, and alerting surface across every platform you ship.
+
+Use Bitmovin's built-in analytics, FastPix, or both - they are not mutually exclusive. Mux Data fills the same third-party role; FastPix reports the same class of QoE metrics and unifies them across your players.
+
+## What you can track
+
+- **Automatic event tracking** - automatically captures all playback events (play, pause, seek, buffering, etc.)
+- **Bitmovin Player integration** - built specifically for the Bitmovin Player Android SDK
+- **Real-time analytics** - instant access to video performance metrics on the FastPix dashboard
+- **Minimal setup** - easy integration with just a few lines of code
+- **Custom metadata** - support for custom video and player metadata
+
+## Who it's for
+
+- **Android teams shipping Bitmovin Player** who want production QoE monitoring without building an analytics backend.
+- **Streaming, OTT, and broadcast apps** that need to catch rebuffering, slow startup, and playback errors before users churn.
+- **Teams standardizing analytics across platforms** who want Bitmovin data in the same FastPix dashboard as their web and iOS players.
 
 ## Requirements
 
 - **Minimum Android SDK**: 24 (Android 7.0)
 - **Target/Compile SDK**: 35+
-- **Bitmovin Player SDK**: 5.0+
+- **Bitmovin Player SDK**: 5.0+ (integrated in your app, including Bitmovin's Maven repository `https://artifacts.bitmovin.com/artifactory/public-releases`)
 - **Kotlin**: 2.0.21+
 - **Java**: 11
 
+You will also need a FastPix account and a workspace key. [Create a free account](https://dashboard.fastpix.com/signup?utm_source=github&utm_medium=referral&utm_campaign=github_signup), then follow [set up a workspace](https://fastpix.com/docs/getting-started/set-up-a-workspace) to find your workspace key.
+
 ## Installation
 
-### Step 1: Add GitHub Packages Repository
+### Add GitHub Packages Repository
 
 Add the GitHub Packages repository to your project's `settings.gradle.kts`:
 
@@ -50,7 +90,7 @@ dependencyResolutionManagement {
 }
 ```
 
-### Step 2: Add Dependencies
+### Add Dependencies
 
 Add the FastPix Bitmovin Player SDK and Bitmovin Player dependencies to your app's `build.gradle.kts`:
 
@@ -61,7 +101,7 @@ dependencies {
 }
 ```
 
-### Step 3: Configure Authentication
+### Configure Authentication
 
 Create or update `local.properties` in your project root with your GitHub credentials:
 
@@ -74,7 +114,7 @@ lpr.key=YOUR_GITHUB_PERSONAL_ACCESS_TOKEN
 
 ## Quick Start
 
-### 1. Add Bitmovin PlayerView to Your Layout
+### Add Bitmovin PlayerView to Your Layout
 
 Add the `Bitmovin PlayerView` to your activity/fragment layout:
 
@@ -89,7 +129,7 @@ Add the `Bitmovin PlayerView` to your activity/fragment layout:
         app:auto_show="false" />
 ```
 
-### 2. Initialize FastPix SDK in Your Activity
+### Initialize FastPix SDK in Your Activity
 
 Here's a complete example of how to integrate FastPix SDK with Bitmovin Player:
 
@@ -372,6 +412,46 @@ Logs will appear in Logcat with the tag `FastPixBitMovinPlayer`.
 - The SDK automatically tracks all events from BitmovinPlayer
 - Events are tracked based on BitmovinPlayer's native event system
 - Check that BitmovinPlayer is properly configured and receiving events
+
+## Which FastPix SDK for which Android player
+
+FastPix ships a Video Data SDK per player. Pick the one that matches the player your app ships:
+
+| Your Android player | Use this SDK |
+| --- | --- |
+| **Bitmovin Player** | **FastPix/android-data-bitmovin** (this repository) |
+| **AndroidX Media3** (the current ExoPlayer) | [FastPix/android-data-androidXmedia3](https://github.com/FastPix/android-data-androidXmedia3) |
+| **Google ExoPlayer** (standalone / legacy) | [FastPix/android-data-exoplayer-sdk](https://github.com/FastPix/android-data-exoplayer-sdk) |
+| **THEOplayer** | [FastPix/android-data-theoplayer](https://github.com/FastPix/android-data-theoplayer) |
+| **Brightcove Player** | [FastPix/android-data-brightcove](https://github.com/FastPix/android-data-brightcove) |
+| Any player, shared core layer | [FastPix/android-core-data-sdk](https://github.com/FastPix/android-core-data-sdk) |
+
+## FAQ
+
+**How do I monitor Bitmovin Player performance on Android?**
+Add the FastPix Video Data SDK, then create a `FastPixBitMovinPlayer` with your Bitmovin `PlayerView`, player instance, and workspace key. It automatically tracks playback events and reports real-time QoS/QoE metrics to the FastPix dashboard. See [Install the SDK](#installation) and [Quick start](#quick-start).
+
+**Does Bitmovin have built-in analytics, and how is this different?**
+Yes - Bitmovin has its own analytics and observability suite. FastPix is a third-party data platform you run alongside it to unify Bitmovin playback data with your other players, add custom dimensions, and use one dashboard and API across platforms. See [Built-in analytics vs FastPix](#built-in-bitmovin-analytics-vs-fastpix).
+
+**What metrics does it track?**
+Playback and quality-of-experience signals: play/pause/seek/buffering events, startup time, rebuffering, bitrate and resolution changes, errors, and viewer engagement, plus any custom metadata you attach.
+
+**Is this a video player?**
+No. It does not play or render video. It is a monitoring SDK that attaches to the Bitmovin Player you already use.
+
+**How does it compare to Mux Data for Bitmovin Player?**
+Both are third-party Video Data platforms for Bitmovin Player. FastPix reports the same class of QoE metrics and unifies Bitmovin data with your web, iOS, and other FastPix-monitored players in one dashboard.
+
+**Do I need a FastPix account?**
+Yes. You need a workspace key from your FastPix account to report data. [Create a free account](https://dashboard.fastpix.com/signup?utm_source=github&utm_medium=referral&utm_campaign=github_signup).
+
+## Documentation
+
+- [Monitor Bitmovin Player - FastPix docs](https://fastpix.com/docs/video-data/monitors/bitmovin-player)
+- [FastPix Video Data overview](https://fastpix.com/docs/video-data/overview)
+- [Use custom dimensions](https://fastpix.com/docs/video-data/use-custom-dimensions)
+- [Bitmovin Player Android docs](https://developer.bitmovin.com/playback/docs/getting-started-android)
 
 ## Support
 
