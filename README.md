@@ -12,9 +12,7 @@ It is **not a video player** and does not replace Bitmovin Player. It is a third
 
 [Monitor Bitmovin Player docs](https://fastpix.com/docs/video-data/monitors/bitmovin-player) · [Create a free account](https://dashboard.fastpix.com/signup?utm_source=github&utm_medium=referral&utm_campaign=github_signup)
 
-## Jump to
-
-Skip straight to a section without scrolling:
+## Contents
 
 | Get started | Understand | Reference |
 |---|---|---|
@@ -63,6 +61,7 @@ Use Bitmovin's built-in analytics, FastPix, or both - they are not mutually excl
 - **Target/Compile SDK**: 35+
 - **Bitmovin Player SDK**: 3.x (integrated in your app, including Bitmovin's Maven repository `https://artifacts.bitmovin.com/artifactory/public-releases`)
 - **A Bitmovin Player license**: required to play content, with your app's package name allowlisted (see [Configure your Bitmovin Player license](#configure-your-bitmovin-player-license))
+- **GitHub Packages credentials**: the FastPix SDKs are published to GitHub Packages, so you need a GitHub username and a personal access token with the `read:packages` scope to download them (see [Configure authentication](#configure-authentication))
 - **Kotlin**: 2.0.21+
 - **Java**: 11
 
